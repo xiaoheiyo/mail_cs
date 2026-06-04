@@ -8,8 +8,7 @@
 ### 📧 邮件发送
 - **SMTP 发送** — 支持端口 25/587/465，显式 TLS（STARTTLS）与隐式 SSL
 - **邮件队列与重试** — 发送失败自动入队，指数退避重试（30s→1m→2m→4m→8m），最大 5 次
-- **批量收件人** — 支持多个 RCPT TO
-- **DSN 状态通知** — 请求投递状态报告（success/failure/delay）
+
 
 ### 📥 邮件接收
 - **IMAP 拉取** — 支持多账户、多文件夹
@@ -19,18 +18,13 @@
 ### 🎨 界面
 - **三栏布局** — 文件夹树 / 邮件列表 / 邮件预览
 - **富文本编辑器** — 加粗、斜体、下划线、表格、图片、emoji
-- **模板** — 邮件模板管理与快速插入
 - **收件人管理** — 自动保存发过的收件人
 - **多账户** — 添加任意 SMTP/IMAP 账户
-- **深色模式** — 浅色/深色主题切换
-- **响应式** — 适配桌面端、平板、手机
-- **自定义导航链接**
 
 ### 🔐 安全
 - **管理员密码** — 首次启动设置，HMAC-SHA256 保护
 - **密码加密** — 邮箱密码 AES 加密存储
-- **TLS 证书验证** — 可配置忽略（用于自签名证书）
-- **代理支持** — HTTP CONNECT / SOCKS4 / SOCKS5
+- **TLS 证书验证** — 可配置忽略（用于自签名证书
 
 ## 快速开始
 
@@ -60,83 +54,6 @@ npm start
 | `DB_NAME` | 数据库名 |
 | `NODE_ENV` | 环境（production/development） |
 
-## 邮件发送 API
-
-### 导入
-
-```typescript
-import { send, sendMail, MailClient, configure } from './lib/mailer'
-```
-
-### 简单发送（位置参数风格）
-
-```typescript
-await send(
-  'sender@example.com',     // mail_from
-  'recipient@example.com',  // rcpt_to
-  '邮件主题',                // subject
-  '纯文本正文',              // body
-  '<p>HTML 正文</p>',       // htmlBody (可选)
-  [{ filename: 'test.pdf', content: buffer }]  // attachments (可选)
-)
-```
-
-### 对象选项风格
-
-```typescript
-await sendMail({
-  from: 'sender@example.com',
-  to: ['user1@example.com', 'user2@example.com'],
-  subject: 'Hello',
-  body: 'Plain text content',
-  htmlBody: '<p>HTML content</p>',
-  attachments: [
-    { filename: 'report.pdf', content: pdfBuffer, contentType: 'application/pdf' },
-    { filename: 'logo.png', content: logoBase64, encoding: 'base64', cid: 'logo' },
-  ],
-})
-```
-
-### 实例化方式
-
-```typescript
-const client = new MailClient({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: { user: 'user@gmail.com', pass: 'app-password' },
-  ignoreCert: false,
-  proxy: 'socks5://127.0.0.1:1080',
-  timeout: 15000,
-})
-
-await client.send(from, to, subject, body, html)
-```
-
-### 配置管理（优先级：代码 > 环境变量 > 配置文件）
-
-**环境变量：** `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_PROXY`, `SMTP_IGNORE_CERT`
-
-**配置文件：** 自动读取 `mailer.config.json` / `.mailerrc`（JSON 格式，字段同 `MailerConfig`）
-
-```json
-{
-  "host": "smtp.example.com",
-  "port": 587,
-  "auth": { "user": "user", "pass": "pass" },
-  "proxy": "socks5://127.0.0.1:1080"
-}
-```
-
-### 返回结果
-
-```typescript
-interface SendResult {
-  accepted: string[]     // 被接受的收件人
-  rejected: string[]     // 被拒绝的收件人
-  messageId?: string     // 服务端返回的 Message-ID
-}
-```
 
 ## 原始 SMTP 协议
 
@@ -203,48 +120,6 @@ const { headers, body, messageId } = buildMime({
 })
 ```
 
-自动处理：
-- **多部分结构** — `multipart/mixed` → `multipart/related` → `multipart/alternative`
-- **Header 编码** — 非 ASCII 头自动 `=?UTF-8?B?...?=`（RFC 2047）
-- **内容编码** — 7bit / quoted-printable / base64 自动选择
-- **dot-stuffing** — DATA 内容自动转义（RFC 5321 §4.5.2）
-
-## 项目结构
-
-```
-src/
-├── api/              # 前端 API 调用
-│   └── mail.ts
-├── components/       # React 组件
-│   ├── AddAccountForm.tsx
-│   ├── ComposeMail.tsx
-│   ├── FolderTree.tsx
-│   ├── MailList.tsx
-│   ├── MailView.tsx
-│   ├── NavBar.tsx
-│   ├── RichEditor.tsx
-│   ├── SettingsPanel.tsx
-│   └── TemplateManager.tsx
-├── views/            # 页面级视图
-│   ├── AdminLogin.tsx
-│   └── SetupView.tsx
-├── server/           # 后端
-│   ├── index.ts
-│   ├── db/           # MySQL 连接与初始化
-│   ├── routes/       # Express 路由
-│   ├── services/     # 业务逻辑
-│   └── lib/          # 邮件库（可独立使用）
-│       ├── mailer.ts          # 邮件发送 API 入口
-│       ├── config.ts          # 配置管理
-│       ├── connection.ts      # TCP/TLS 连接
-│       ├── smtp-protocol.ts   # SMTP 协议实现
-│       └── mime.ts            # MIME 邮件构建
-├── types/            # TypeScript 类型
-│   └── index.ts
-├── App.tsx           # 主应用
-├── App.css           # 样式
-└── index.css         # 全局样式
-```
 
 ## 技术栈
 
