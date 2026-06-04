@@ -438,9 +438,9 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
                 <dt>技术栈</dt>
                 <dd>React + TypeScript + Express + MySQL</dd>
                 <dt>作者</dt>
-                <dd>Your Name</dd>
+                <dd>heiu</dd>
                 <dt>仓库</dt>
-                <dd><a href="https://github.com/yourname/mail-cs" target="_blank" rel="noopener noreferrer">github.com/yourname/mail-cs</a></dd>
+                <dd><a href="https://github.com/xiaoheiyo/mail_cs" target="_blank" rel="noopener noreferrer">github.com/xiaoheiyo/mail_cs</a></dd>
               </dl>
             </div>
           )}
