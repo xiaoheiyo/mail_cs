@@ -1397,6 +1397,44 @@ legend {
 }
 .settings-preset-list { margin-top: 12px; }
 
+/* ---- About section ---- */
+.about-section {
+  max-width: 480px;
+}
+.about-section h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+.about-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0 0 24px;
+}
+.about-info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 20px;
+  font-size: 14px;
+}
+.about-info dt {
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.about-info dd {
+  margin: 0;
+  color: var(--text-primary);
+}
+.about-info a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.about-info a:hover {
+  text-decoration: underline;
+}
+
 /* ---- Rich Editor active state ---- */
 .rt-btn.active {
   background: var(--bg-active);

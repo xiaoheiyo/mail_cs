@@ -10,7 +10,7 @@ interface Props {
   onSettingsChange: (s: UserSettings) => void
 }
 
-type Tab = 'accounts' | 'folders' | 'presets' | 'recipients' | 'settings'
+type Tab = 'accounts' | 'folders' | 'presets' | 'recipients' | 'settings' | 'about'
 
 interface AccountWithFolders {
   config: MailConfig
@@ -201,6 +201,7 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
           <button className={`settings-tab ${tab === 'presets' ? 'active' : ''}`} onClick={() => setTab('presets')}>服务商预设</button>
           <button className={`settings-tab ${tab === 'recipients' ? 'active' : ''}`} onClick={() => setTab('recipients')}>收件人管理</button>
           <button className={`settings-tab ${tab === 'settings' ? 'active' : ''}`} onClick={() => setTab('settings')}>用户设置</button>
+          <button className={`settings-tab ${tab === 'about' ? 'active' : ''}`} onClick={() => setTab('about')}>关于</button>
         </div>
 
         <div className="settings-content">
@@ -421,6 +422,26 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {tab === 'about' && (
+            <div className="about-section">
+              <h3>Mail Client</h3>
+              <p className="about-desc">
+                一款基于 Web 的多账户邮件客户端，支持 SMTP 发送与 IMAP 收取，
+                提供邮件缓存、发送队列、自定义模板等功能。
+              </p>
+              <dl className="about-info">
+                <dt>版本</dt>
+                <dd>1.0.0</dd>
+                <dt>技术栈</dt>
+                <dd>React + TypeScript + Express + MySQL</dd>
+                <dt>作者</dt>
+                <dd>Your Name</dd>
+                <dt>仓库</dt>
+                <dd><a href="https://github.com/yourname/mail-cs" target="_blank" rel="noopener noreferrer">github.com/yourname/mail-cs</a></dd>
+              </dl>
             </div>
           )}
 
