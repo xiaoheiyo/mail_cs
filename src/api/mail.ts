@@ -264,6 +264,28 @@ export async function deleteQueueItem(id: number): Promise<void> {
   if (!res.ok) throw new Error(await res.text())
 }
 
+// ---- 版本更新 ----
+
+export interface CheckUpdateResult {
+  current: string
+  latest: string
+  hasUpdate: boolean
+  releaseUrl: string | null
+  error?: string
+}
+
+export async function fetchVersion(): Promise<{ version: string }> {
+  const res = await fetch(`${BASE}/version`)
+  if (!res.ok) throw new Error(await res.text())
+  return res.json()
+}
+
+export async function checkForUpdate(): Promise<CheckUpdateResult> {
+  const res = await fetch(`${BASE}/check-update`, { method: 'POST' })
+  if (!res.ok) throw new Error(await res.text())
+  return res.json()
+}
+
 export async function saveSettings(settings: Record<string, any>): Promise<void> {
   const res = await fetch(`${BASE}/settings`, {
     method: 'PUT',

@@ -32,6 +32,7 @@ export default function ComposeMail({ accounts, defaultAccount, onClose, onSent,
   const [showRecipients, setShowRecipients] = useState(false)
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [showAttachments, setShowAttachments] = useState(false)
+  const [confirmRemoveIndex, setConfirmRemoveIndex] = useState<number | null>(null)
 
   useEffect(() => {
     fetchTemplates().then(setTemplates).catch(() => {})
@@ -103,6 +104,7 @@ export default function ComposeMail({ accounts, defaultAccount, onClose, onSent,
   }
 
   const removeAttachment = (index: number) => {
+    setConfirmRemoveIndex(null)
     setAttachments(prev => prev.filter((_, i) => i !== index))
   }
 
@@ -185,7 +187,16 @@ export default function ComposeMail({ accounts, defaultAccount, onClose, onSent,
                   <div key={i} className="compose-attachment-item">
                     <span className="attach-name">{a.filename}</span>
                     <span className="attach-size">({formatFileSize(a.content)})</span>
-                    <button type="button" className="btn-tiny" onClick={() => removeAttachment(i)}>✕</button>
+                    {confirmRemoveIndex === i ? (
+                      <span className="delete-btn-group">
+                        <span className="attach-confirm">
+                          <button type="button" className="btn-tiny btn-danger-tiny" onClick={() => removeAttachment(i)}>确认</button>
+                          <button type="button" className="btn-tiny" onClick={() => setConfirmRemoveIndex(null)}>取消</button>
+                        </span>
+                      </span>
+                    ) : (
+                      <button type="button" className="btn-tiny" onClick={() => setConfirmRemoveIndex(i)}>✕</button>
+                    )}
                   </div>
                 ))}
               </div>

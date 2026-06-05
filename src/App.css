@@ -382,6 +382,21 @@ legend {
   border-bottom-color: var(--accent);
 }
 
+.update-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e53935;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 4px;
+  line-height: 1;
+}
+
 .settings-content {
   min-height: 300px;
 }
@@ -517,45 +532,6 @@ legend {
 
 .test-badge.testing {
   color: var(--accent);
-}
-
-/* ---- Custom Link Rows ---- */
-.settings-custom-link-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.settings-link-icon {
-  width: 40px;
-  text-align: center;
-  padding: 4px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 14px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-.settings-link-title {
-  width: 120px;
-  padding: 4px 8px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 13px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-.settings-link-url {
-  flex: 1;
-  padding: 4px 8px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 13px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
 }
 
 /* ---- Template Manager ---- */
@@ -889,6 +865,26 @@ legend {
 
 .attach-size {
   color: var(--text-muted);
+}
+.attach-confirm {
+  display: flex;
+  gap: 4px;
+}
+.attach-confirm .btn-tiny {
+  font-size: 11px;
+  padding: 2px 6px;
+}
+.attach-confirm .btn-small {
+  font-size: 12px;
+  padding: 3px 10px;
+}
+
+.delete-btn-group {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 2px 4px;
 }
 
 .compose-actions {
@@ -1433,6 +1429,58 @@ legend {
 }
 .about-info a:hover {
   text-decoration: underline;
+}
+
+/* ---- Update section ---- */
+.update-section {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+.update-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+.update-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.update-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.update-result {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.update-result.up-to-date {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+.update-result.has-update {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.update-result p {
+  margin: 0 0 8px;
+}
+.update-result .btn-secondary {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+.update-error {
+  color: #c62828;
 }
 
 /* ---- Rich Editor active state ---- */

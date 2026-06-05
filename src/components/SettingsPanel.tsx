@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { MailConfig, FolderConfig, UserSettings } from '../types'
 import { fetchAccounts, saveAccount, deleteAccount, testConnection, fetchPresets, savePreset, deletePreset, fetchRecipients, saveRecipient, deleteRecipient } from '../api/mail'
-import { fetchImapFolders, fetchFolderConfig, saveFolderConfig, saveSettings } from '../api/mail'
+import { fetchImapFolders, fetchFolderConfig, saveFolderConfig, saveSettings, fetchVersion, checkForUpdate, type CheckUpdateResult } from '../api/mail'
 import AddAccountForm from './AddAccountForm'
 
 interface Props {
@@ -20,6 +20,27 @@ interface AccountWithFolders {
 
 export default function SettingsPanel({ initialSettings, onClose, onSettingsChange }: Props) {
   const [tab, setTab] = useState<Tab>('accounts')
+  const [hasUpdate, setHasUpdate] = useState(false)
+  const [updateVersion, setUpdateVersion] = useState('')
+
+  useEffect(() => {
+    fetchVersion().then(v => {
+      if (v.version) {
+        const cached = sessionStorage.getItem('mail_cs_update')
+        if (cached) {
+          const c = JSON.parse(cached)
+          setHasUpdate(c.hasUpdate)
+          setUpdateVersion(c.latest)
+          return
+        }
+        checkForUpdate().then(r => {
+          sessionStorage.setItem('mail_cs_update', JSON.stringify(r))
+          setHasUpdate(r.hasUpdate)
+          setUpdateVersion(r.latest)
+        }).catch(() => {})
+      }
+    }).catch(() => {})
+  }, [])
   const [recipients, setRecipients] = useState<any[]>([])
   const [recipientForm, setRecipientForm] = useState<any | null>(null)
   const [presets, setPresets] = useState<any[]>([])
@@ -157,27 +178,6 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
     setSaving(false)
   }
 
-  const addCustomLink = () => {
-    setSettings(prev => ({
-      ...prev,
-      customLinks: [...prev.customLinks, { id: `link_${Date.now()}`, title: '', url: '', icon: '🌐' }],
-    }))
-  }
-
-  const updateCustomLink = (id: string, field: 'title' | 'url' | 'icon', value: string) => {
-    setSettings(prev => ({
-      ...prev,
-      customLinks: prev.customLinks.map(l => l.id === id ? { ...l, [field]: value } : l),
-    }))
-  }
-
-  const removeCustomLink = (id: string) => {
-    setSettings(prev => ({
-      ...prev,
-      customLinks: prev.customLinks.filter(l => l.id !== id),
-    }))
-  }
-
   const saveUserSettings = async () => {
     try {
       await saveSettings(settings)
@@ -201,7 +201,10 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
           <button className={`settings-tab ${tab === 'presets' ? 'active' : ''}`} onClick={() => setTab('presets')}>服务商预设</button>
           <button className={`settings-tab ${tab === 'recipients' ? 'active' : ''}`} onClick={() => setTab('recipients')}>收件人管理</button>
           <button className={`settings-tab ${tab === 'settings' ? 'active' : ''}`} onClick={() => setTab('settings')}>用户设置</button>
-          <button className={`settings-tab ${tab === 'about' ? 'active' : ''}`} onClick={() => setTab('about')}>关于</button>
+          <button className={`settings-tab ${tab === 'about' ? 'active' : ''}`} onClick={() => setTab('about')}>
+            关于
+            {hasUpdate && <span className="update-badge" title={`新版本 ${updateVersion}`}>!</span>}
+          </button>
         </div>
 
         <div className="settings-content">
@@ -426,23 +429,7 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
           )}
 
           {tab === 'about' && (
-            <div className="about-section">
-              <h3>Mail Client</h3>
-              <p className="about-desc">
-                一款基于 Web 的多账户邮件客户端，支持 SMTP 发送与 IMAP 收取，
-                提供邮件缓存、发送队列、自定义模板等功能。
-              </p>
-              <dl className="about-info">
-                <dt>版本</dt>
-                <dd>1.0.0</dd>
-                <dt>技术栈</dt>
-                <dd>React + TypeScript + Express + MySQL</dd>
-                <dt>作者</dt>
-                <dd>heiu</dd>
-                <dt>仓库</dt>
-                <dd><a href="https://github.com/xiaoheiyo/mail_cs" target="_blank" rel="noopener noreferrer">github.com/xiaoheiyo/mail_cs</a></dd>
-              </dl>
-            </div>
+            <AboutTab version={updateVersion} hasUpdate={hasUpdate} />
           )}
 
           {tab === 'settings' && (
@@ -478,20 +465,6 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
                 </div>
               </fieldset>
 
-              <fieldset>
-                <legend>自定义网页</legend>
-                <p className="field-hint">添加的链接会显示在顶部导航栏</p>
-                {settings.customLinks.map(link => (
-                  <div key={link.id} className="settings-custom-link-row">
-                    <input className="settings-link-icon" value={link.icon} onChange={e => updateCustomLink(link.id, 'icon', e.target.value)} placeholder="图标" maxLength={2} />
-                    <input className="settings-link-title" value={link.title} onChange={e => updateCustomLink(link.id, 'title', e.target.value)} placeholder="名称" />
-                    <input className="settings-link-url" value={link.url} onChange={e => updateCustomLink(link.id, 'url', e.target.value)} placeholder="https://..." />
-                    <button className="btn-tiny btn-danger-tiny" onClick={() => removeCustomLink(link.id)}>✕</button>
-                  </div>
-                ))}
-                <button className="btn-tiny" onClick={addCustomLink}>+ 添加链接</button>
-              </fieldset>
-
               <div className="settings-save-row">
                 <button className="btn-primary" onClick={saveUserSettings}>保存设置</button>
                 {saveMsg && <span className="settings-save-msg">{saveMsg}</span>}
@@ -499,6 +472,82 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
             </div>
           )}
         </div>
+      </div>
+    </div>
+  )
+}
+
+function AboutTab({ version, hasUpdate }: { version: string; hasUpdate: boolean }) {
+  const [checking, setChecking] = useState(false)
+  const [result, setResult] = useState<CheckUpdateResult | null>(null)
+
+  useEffect(() => {
+    if (version) {
+      setResult({ current: version, latest: version, hasUpdate, releaseUrl: null })
+    }
+  }, [version, hasUpdate])
+
+  const handleCheck = async () => {
+    setChecking(true)
+    setResult(null)
+    try {
+      const r = await checkForUpdate()
+      sessionStorage.setItem('mail_cs_update', JSON.stringify(r))
+      setResult(r)
+    } catch {}
+    setChecking(false)
+  }
+
+  return (
+    <div className="about-section">
+      <h3>Mail Client</h3>
+      <p className="about-desc">
+        一款基于 Web 的多账户邮件客户端，支持 SMTP 发送与 IMAP 收取，
+        提供邮件缓存、发送队列、自定义模板等功能。
+      </p>
+      <dl className="about-info">
+        <dt>技术栈</dt>
+        <dd>React + TypeScript + Express + MySQL</dd>
+        <dt>作者</dt>
+        <dd>heiu</dd>
+      </dl>
+
+      <div className="update-section">
+        <div className="update-row">
+          <span className="update-label">当前版本</span>
+          <span className="update-value">{version || '...'}</span>
+        </div>
+        {result && (
+          <div className={`update-result ${result.hasUpdate ? 'has-update' : 'up-to-date'}`}>
+            {result.error ? (
+              <>
+                <p className="update-error">{result.error}</p>
+                <button className="btn-primary btn-sm" onClick={handleCheck} disabled={checking} style={{ marginTop: 8 }}>
+                  {checking ? '检查中...' : '重新检查'}
+                </button>
+              </>
+            ) : result.hasUpdate ? (
+              <>
+                <p>发现新版本: <strong>{result.latest}</strong></p>
+                {result.releaseUrl && (
+                  <a href={result.releaseUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+                    前往下载
+                  </a>
+                )}
+                <button className="btn-tiny" onClick={handleCheck} disabled={checking} style={{ marginLeft: 12 }}>
+                  {checking ? '...' : '重新检查'}
+                </button>
+              </>
+            ) : (
+              <>
+                <p>已是最新版本</p>
+                <button className="btn-tiny" onClick={handleCheck} disabled={checking} style={{ marginTop: 8 }}>
+                  {checking ? '检查中...' : '重新检查'}
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

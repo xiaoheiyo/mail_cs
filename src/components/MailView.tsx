@@ -18,21 +18,19 @@ export default function MailView({ email, onReply, onForward, onDelete, onExport
 
   return (
     <div className="mail-view">
-      {confirmDelete && (
-        <div className="overlay" onClick={() => setConfirmDelete(false)}>
-          <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
-            <div className="confirm-dialog-text">确认删除此邮件？</div>
-            <div className="confirm-dialog-actions">
-              <button className="btn-secondary" onClick={() => setConfirmDelete(false)}>取消</button>
-              <button className="btn-primary btn-danger-primary" onClick={() => { onDelete?.(email); setConfirmDelete(false) }}>删除</button>
-            </div>
-          </div>
-        </div>
-      )}
       <div className="mail-actions">
         <button className="btn-small" onClick={() => onReply?.(email)}>回复</button>
         <button className="btn-small" onClick={() => onForward?.(email)}>转发</button>
-        <button className="btn-small btn-danger-small" onClick={() => setConfirmDelete(true)}>删除</button>
+        <div className="delete-btn-group">
+          {confirmDelete ? (
+            <span className="attach-confirm">
+              <button className="btn-small btn-danger-small" onClick={() => { onDelete?.(email); setConfirmDelete(false) }}>确认</button>
+              <button className="btn-small" onClick={() => setConfirmDelete(false)}>取消</button>
+            </span>
+          ) : (
+            <button className="btn-small btn-danger-small" onClick={() => setConfirmDelete(true)}>删除</button>
+          )}
+        </div>
         <button className="btn-small" onClick={() => onExport?.(email)}>导出</button>
       </div>
       <div className="mail-view-header">

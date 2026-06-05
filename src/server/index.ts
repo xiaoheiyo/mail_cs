@@ -11,6 +11,7 @@ import setupRouter from './routes/setup.js'
 import accountRouter from './routes/account.js'
 import templateRouter from './routes/template.js'
 import settingsRouter from './routes/settings.js'
+import updateRouter from './routes/update.js'
 import presetRouter from './routes/preset.js'
 import recipientRouter from './routes/recipient.js'
 import adminRouter from './routes/admin.js'
@@ -32,6 +33,7 @@ app.use('/api', mailRouter)
 app.use('/api', accountRouter)
 app.use('/api', templateRouter)
 app.use('/api', settingsRouter)
+app.use('/api', updateRouter)
 app.use('/api', presetRouter)
 app.use('/api', recipientRouter)
 app.use('/api', adminRouter)
