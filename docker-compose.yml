@@ -17,7 +17,6 @@ services:
     container_name: mail_cs_app
     restart: unless-stopped
     ports:
-      - "3001:3001"
       - "5173:5173"
     environment:
       DB_HOST: mysql
