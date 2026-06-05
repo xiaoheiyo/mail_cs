@@ -266,11 +266,19 @@ export async function deleteQueueItem(id: number): Promise<void> {
 
 // ---- 版本更新 ----
 
+export interface CommitInfo {
+  sha: string
+  message: string
+  date: string
+  author: string
+}
+
 export interface CheckUpdateResult {
   current: string
   latest: string
   hasUpdate: boolean
-  releaseUrl: string | null
+  commits: CommitInfo[]
+  downloadUrl: string | null
   error?: string
 }
 

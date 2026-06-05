@@ -101,14 +101,27 @@ export default function UpdatePanel({ onClose }: Props) {
         <div className="modal-body">
           <div className="update-row">
             <span className="update-label">当前版本</span>
-            <span className="update-value">{version || '...'}</span>
+            <span className="update-value" style={{ fontFamily: 'monospace' }}>{version || '...'}</span>
           </div>
           {result && (
             <div className="update-row">
               <span className="update-label">最新版本</span>
-              <span className="update-value">{result.latest}</span>
+              <span className="update-value" style={{ fontFamily: 'monospace' }}>{result.latest}</span>
             </div>
           )}
+
+          {result?.commits && result.commits.length > 0 && (
+            <div className="update-commits" style={{ marginTop: 12 }}>
+              <div className="update-label" style={{ marginBottom: 8 }}>更新摘要</div>
+              {result.commits.slice(0, result.hasUpdate ? undefined : 1).map(c => (
+                <div key={c.sha} className="update-commit-item">
+                  <code className="commit-sha">{c.sha}</code>
+                  <span className="commit-msg">{c.message}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {result?.error && <p className="update-error">{result.error}</p>}
 
           {!result && checking && <p className="text-muted">检查中...</p>}

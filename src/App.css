@@ -220,6 +220,36 @@ body {
   font-size: 13px;
 }
 
+/* ---- Update commits summary ---- */
+.update-commits {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px 12px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.update-commit-item {
+  display: flex;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 13px;
+  align-items: flex-start;
+}
+.update-commit-item + .update-commit-item {
+  border-top: 1px solid var(--border-light);
+}
+.commit-sha {
+  font-size: 11px;
+  color: var(--accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.commit-msg {
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
 /* ---- Update download progress ---- */
 .update-download-progress {
   display: flex;
@@ -237,14 +267,6 @@ body {
   background: var(--accent);
   border-radius: 4px;
   transition: width 0.3s ease;
-}
-.progress-bar-wrap.indeterminate .progress-bar-fill {
-  width: 40%;
-  animation: indeterminate 1.5s ease-in-out infinite;
-}
-@keyframes indeterminate {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(350%); }
 }
 .progress-text {
   font-size: 12px;

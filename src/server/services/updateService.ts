@@ -5,24 +5,41 @@ import { execSync } from 'child_process'
 
 const __filename = fileURLToPath(import.meta.url)
 
-function loadPackageJson() {
-  const pkgPath = resolve(dirname(__filename), '../../../package.json')
-  const p = JSON.parse(readFileSync(pkgPath, 'utf-8'))
-  return { version: p.version || '0.0.0' }
-}
-
-const GITHUB_API = 'https://api.github.com/repos/xiaoheiyo/mail_cs/releases/latest'
+const COMMITS_API = 'https://api.github.com/repos/xiaoheiyo/mail_cs/commits?per_page=10'
 const DOWNLOAD_PROXY = 'https://gh-proxy.com/'
 
+function getCurrentCommit(): string {
+  try {
+    return execSync('git rev-parse --short HEAD', { cwd: process.cwd(), encoding: 'utf-8', timeout: 5000 }).trim()
+  } catch {
+    try {
+      const pkgPath = resolve(dirname(__filename), '../../../package.json')
+      const p = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+      return p.version || '0.0.0'
+    } catch {
+      return '0.0.0'
+    }
+  }
+}
+
+const CURRENT_COMMIT = getCurrentCommit()
+
 export function getCurrentVersion(): string {
-  return loadPackageJson().version
+  return CURRENT_COMMIT
+}
+
+export interface CommitInfo {
+  sha: string
+  message: string
+  date: string
+  author: string
 }
 
 export interface CheckResult {
   current: string
   latest: string
   hasUpdate: boolean
-  releaseUrl: string | null
+  commits: CommitInfo[]
   downloadUrl: string | null
   error?: string
 }
@@ -34,29 +51,38 @@ export function getDownloadProgress() {
 }
 
 export async function checkForUpdate(): Promise<CheckResult> {
-  const { version: current } = loadPackageJson()
   try {
-    const res = await fetch(GITHUB_API, {
+    const res = await fetch(COMMITS_API, {
       headers: { 'User-Agent': 'mail-cs-update-checker' },
       signal: AbortSignal.timeout(10000),
     })
     if (!res.ok) {
-      return { current, latest: current, hasUpdate: false, releaseUrl: null, downloadUrl: null, error: '检查失败: ' + res.status }
+      return { current: CURRENT_COMMIT, latest: CURRENT_COMMIT, hasUpdate: false, commits: [], downloadUrl: null, error: '检查失败: ' + res.status }
     }
-    const data: any = await res.json()
-    const latest = (data.tag_name || data.name || '').replace(/^v/, '')
-    if (!latest) {
-      return { current, latest: current, hasUpdate: false, releaseUrl: null, downloadUrl: null, error: '无法获取最新版本' }
+    const data: any[] = await res.json()
+    if (!data || data.length === 0) {
+      return { current: CURRENT_COMMIT, latest: CURRENT_COMMIT, hasUpdate: false, commits: [], downloadUrl: null, error: '无法获取提交记录' }
     }
-    const hasUpdate = compareVersions(latest, current) > 0
-    const asset = data.assets?.find((a: any) => a.name.endsWith('.zip'))
+
+    const latestSha = data[0].sha.substring(0, 7)
+    const hasUpdate = latestSha !== CURRENT_COMMIT
+
+    const commits: CommitInfo[] = data.map((c: any) => ({
+      sha: c.sha.substring(0, 7),
+      message: (c.commit?.message || '').split('\n')[0],
+      date: c.commit?.committer?.date || '',
+      author: c.commit?.author?.name || '',
+    }))
+
     return {
-      current, latest, hasUpdate,
-      releaseUrl: data.html_url || null,
-      downloadUrl: asset?.browser_download_url || data.zipball_url || null,
+      current: CURRENT_COMMIT,
+      latest: latestSha,
+      hasUpdate,
+      commits,
+      downloadUrl: `https://github.com/xiaoheiyo/mail_cs/archive/refs/heads/main.zip`,
     }
   } catch (err: any) {
-    return { current, latest: current, hasUpdate: false, releaseUrl: null, downloadUrl: null, error: err.message || '检查失败' }
+    return { current: CURRENT_COMMIT, latest: CURRENT_COMMIT, hasUpdate: false, commits: [], downloadUrl: null, error: err.message || '检查失败' }
   }
 }
 
@@ -108,9 +134,7 @@ export function applyUpdate(): void {
   if (!existsSync(zipPath)) throw new Error('未找到更新包，请先下载')
 
   const extractDir = join(tmpDir, 'extracted')
-  if (existsSync(extractDir)) {
-    rmSync(extractDir, { recursive: true })
-  }
+  if (existsSync(extractDir)) rmSync(extractDir, { recursive: true })
   mkdirSync(extractDir, { recursive: true })
 
   applyProgress = { step: '正在解压...', done: false, error: '' }
@@ -121,14 +145,11 @@ export function applyUpdate(): void {
       stdio: 'pipe', timeout: 60000,
     })
   } else {
-    execSync(`unzip -o "${zipPath}" -d "${extractDir}"`, {
-      stdio: 'pipe', timeout: 60000,
-    })
+    execSync(`unzip -o "${zipPath}" -d "${extractDir}"`, { stdio: 'pipe', timeout: 60000 })
   }
 
   applyProgress = { step: '正在复制文件...', done: false, error: '' }
 
-  // The zip contains a single root folder like "mail_cs-main/"
   const entries = readdirSync(extractDir)
   const root = entries.length === 1 ? join(extractDir, entries[0]) : extractDir
   copyRecursive(root, process.cwd())
@@ -154,16 +175,4 @@ function copyRecursive(src: string, dest: string) {
       writeFileSync(destPath, readFileSync(srcPath))
     }
   }
-}
-
-function compareVersions(a: string, b: string): number {
-  const pa = a.split('.').map(Number)
-  const pb = b.split('.').map(Number)
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    const na = pa[i] || 0
-    const nb = pb[i] || 0
-    if (na > nb) return 1
-    if (na < nb) return -1
-  }
-  return 0
 }
