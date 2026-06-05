@@ -1,6 +1,5 @@
 {
   "name": "mail-client",
-  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,7 +20,8 @@
     "mysql2": "^3.11.0",
     "nodemailer": "^6.9.14",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "concurrently": "^8.2.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -31,7 +31,6 @@
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "concurrently": "^8.2.2",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4",
     "vite": "^5.4.3"

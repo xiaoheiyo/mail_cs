@@ -54,7 +54,7 @@ docker compose up -d
 docker compose logs -f app
 ```
 
-首次启动后访问 `http://localhost:3001`，在初始化页面配置 MySQL 连接信息即可。
+启动后访问 `http://localhost:5173`（开发模式，前后端热重载）。
 
 ### 下载源码本地部署
 

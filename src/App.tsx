@@ -52,22 +52,22 @@ export default function App() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS)
 
   const initApp = useCallback(async () => {
+    try {
+      const r = await checkHealth()
+      if (!r.configured) { setPhase('setup'); return }
+    } catch { setPhase('setup'); return }
+
     const authed = localStorage.getItem('admin_authenticated') === 'true'
     if (!authed) { setPhase('admin'); return }
 
     try {
-      const r = await checkHealth()
-      if (r.configured) {
-        const [saved, s] = await Promise.all([fetchAccounts(), fetchSettings()])
-        setAccounts(saved)
-        const merged = { ...DEFAULT_SETTINGS, ...s }
-        setSettings(merged)
-        applySettings(merged)
-        if (saved.length > 0) setActiveAccountId(saved[0].id)
-        setPhase('ready')
-      } else {
-        setPhase('setup')
-      }
+      const [saved, s] = await Promise.all([fetchAccounts(), fetchSettings()])
+      setAccounts(saved)
+      const merged = { ...DEFAULT_SETTINGS, ...s }
+      setSettings(merged)
+      applySettings(merged)
+      if (saved.length > 0) setActiveAccountId(saved[0].id)
+      setPhase('ready')
     } catch { setPhase('setup') }
   }, [])
 

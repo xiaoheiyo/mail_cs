@@ -111,7 +111,8 @@ export default function FolderTree({
           {showDeploy && (
             <div className="folder-tree-deploy-box">
               <strong>Docker 部署</strong>
-              <pre>docker compose up -d</pre>
+              <pre>docker compose up -d
+访问 http://localhost:5173</pre>
               <strong>本地部署</strong>
               <pre>npm install &amp;&amp; npm run build &amp;&amp; node dist/server/index.js</pre>
               <span className="folder-tree-deploy-close" onClick={() => setShowDeploy(false)}>收起</span>
