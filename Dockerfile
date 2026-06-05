@@ -12,4 +12,4 @@ COPY package*.json ./
 RUN npm ci --production
 COPY --from=build /app/dist ./dist
 EXPOSE 3001
-CMD ["node", "dist/server/index.js"]
+CMD ["npm", "starts"]
