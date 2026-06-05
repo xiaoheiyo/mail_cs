@@ -34,11 +34,10 @@
 # 1. 安装依赖
 npm install
 
-# 2. 构建前端 + 编译后端
-npm run build
+# 2. 安装完后直接运行
+npm start
 
-# 3. 启动（需自行准备 MySQL）
-node dist/server/index.js
+
 ```
 
 ### Docker 部署（推荐）
@@ -78,7 +77,7 @@ set DB_PASSWORD=yourpassword
 set DB_NAME=mail_cs
 
 # 启动
-node dist/server/index.js
+npm start
 ```
 
 ### 环境变量
