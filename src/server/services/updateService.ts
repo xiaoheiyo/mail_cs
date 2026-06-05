@@ -1,6 +1,7 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'fs'
 import { resolve, dirname, join } from 'path'
 import { fileURLToPath } from 'url'
+import { execSync } from 'child_process'
 
 const __filename = fileURLToPath(import.meta.url)
 
@@ -11,6 +12,7 @@ function loadPackageJson() {
 }
 
 const GITHUB_API = 'https://api.github.com/repos/xiaoheiyo/mail_cs/releases/latest'
+const DOWNLOAD_PROXY = 'https://gh-proxy.com/'
 
 export function getCurrentVersion(): string {
   return loadPackageJson().version
@@ -67,7 +69,8 @@ export async function downloadUpdate(): Promise<void> {
   if (!existsSync(tmpDir)) mkdirSync(tmpDir, { recursive: true })
   const zipPath = join(tmpDir, 'update.zip')
 
-  const res = await fetch(check.downloadUrl, {
+  const downloadUrl = DOWNLOAD_PROXY + check.downloadUrl
+  const res = await fetch(downloadUrl, {
     headers: { 'User-Agent': 'mail-cs-downloader' },
   })
   if (!res.ok) throw new Error('下载失败: ' + res.status)
@@ -85,11 +88,72 @@ export async function downloadUpdate(): Promise<void> {
     chunks.push(value)
     received += value.length
     downloadProgress.received = received
+    downloadProgress.total = Math.max(downloadProgress.total, received)
   }
 
   const buffer = Buffer.concat(chunks)
   writeFileSync(zipPath, buffer)
   downloadProgress.done = true
+}
+
+let applyProgress = { step: '', done: false, error: '' }
+
+export function getApplyProgress() {
+  return { ...applyProgress }
+}
+
+export function applyUpdate(): void {
+  const tmpDir = join(process.cwd(), 'data', 'update_tmp')
+  const zipPath = join(tmpDir, 'update.zip')
+  if (!existsSync(zipPath)) throw new Error('未找到更新包，请先下载')
+
+  const extractDir = join(tmpDir, 'extracted')
+  if (existsSync(extractDir)) {
+    rmSync(extractDir, { recursive: true })
+  }
+  mkdirSync(extractDir, { recursive: true })
+
+  applyProgress = { step: '正在解压...', done: false, error: '' }
+
+  const isWin = process.platform === 'win32'
+  if (isWin) {
+    execSync(`powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${extractDir}' -Force"`, {
+      stdio: 'pipe', timeout: 60000,
+    })
+  } else {
+    execSync(`unzip -o "${zipPath}" -d "${extractDir}"`, {
+      stdio: 'pipe', timeout: 60000,
+    })
+  }
+
+  applyProgress = { step: '正在复制文件...', done: false, error: '' }
+
+  // The zip contains a single root folder like "mail_cs-main/"
+  const entries = readdirSync(extractDir)
+  const root = entries.length === 1 ? join(extractDir, entries[0]) : extractDir
+  copyRecursive(root, process.cwd())
+
+  applyProgress = { step: '正在安装依赖...', done: false, error: '' }
+  execSync('npm install', { stdio: 'pipe', cwd: process.cwd(), timeout: 120000 })
+
+  applyProgress = { step: '正在构建...', done: false, error: '' }
+  execSync('npm run build', { stdio: 'pipe', cwd: process.cwd(), timeout: 120000 })
+
+  applyProgress = { step: '', done: true, error: '' }
+}
+
+function copyRecursive(src: string, dest: string) {
+  const entries = readdirSync(src, { withFileTypes: true })
+  for (const entry of entries) {
+    const srcPath = join(src, entry.name)
+    const destPath = join(dest, entry.name)
+    if (entry.isDirectory()) {
+      if (!existsSync(destPath)) mkdirSync(destPath, { recursive: true })
+      copyRecursive(srcPath, destPath)
+    } else {
+      writeFileSync(destPath, readFileSync(srcPath))
+    }
+  }
 }
 
 function compareVersions(a: string, b: string): number {
