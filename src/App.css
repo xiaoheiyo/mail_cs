@@ -209,6 +209,40 @@ body {
   color: var(--text-primary);
 }
 
+.modal-update {
+  width: 420px;
+}
+.modal-update .modal-body {
+  min-height: 100px;
+}
+.modal-update .text-muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ---- Update download progress ---- */
+.update-download-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.progress-bar-wrap {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.progress-text {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .confirm-dialog-actions {
   display: flex;
   justify-content: center;
@@ -380,158 +414,6 @@ legend {
 .settings-tab.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
-}
-
-.update-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #e53935;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  margin-left: 4px;
-  line-height: 1;
-}
-
-.settings-content {
-  min-height: 300px;
-}
-
-.settings-account-list {
-  margin-top: 16px;
-}
-
-.settings-account-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: box-shadow 0.15s;
-}
-
-.settings-account-item:hover {
-  box-shadow: 0 1px 4px var(--shadow);
-}
-
-.settings-account-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.settings-folder-account {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-
-.settings-folder-acct-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  cursor: pointer;
-  background: var(--bg-secondary);
-  user-select: none;
-  transition: background 0.15s;
-}
-
-.settings-folder-acct-header:hover {
-  background: var(--bg-hover);
-}
-
-.settings-folder-list {
-  padding: 16px;
-  border-top: 1px solid var(--border-color);
-}
-
-.settings-folder-hint {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.settings-folder-add-imap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  max-width: 300px;
-}
-
-.settings-folder-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 0;
-}
-
-.settings-folder-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  min-width: 200px;
-}
-
-.settings-folder-toggle input[type="checkbox"] {
-  margin: 0;
-  accent-color: var(--accent);
-}
-
-.text-mono {
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.settings-folder-name-input {
-  flex: 1;
-  padding: 4px 8px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 13px;
-  outline: none;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-.settings-folder-name-input:focus {
-  border-color: var(--accent);
-}
-
-.text-muted {
-  color: var(--text-muted);
-  font-size: 12px;
-  margin-left: 4px;
-}
-
-/* ---- Test Badge ---- */
-.test-badge {
-  font-size: 11px;
-  font-weight: 600;
-  margin-left: 4px;
-}
-
-.test-badge.success {
-  color: #1e8e3e;
-}
-
-.test-badge.fail {
-  color: var(--danger);
-}
-
-.test-badge.testing {
-  color: var(--accent);
 }
 
 /* ---- Template Manager ---- */
@@ -1228,6 +1110,31 @@ legend {
   font-size: 10px;
   color: var(--text-muted);
   opacity: 0.7;
+  cursor: pointer;
+}
+.folder-tree-version:hover {
+  opacity: 1;
+}
+.folder-tree-update {
+  display: block;
+  font-size: 10px;
+  cursor: pointer;
+}
+.folder-tree-update.has-update {
+  color: #e53935;
+  font-weight: 600;
+}
+.folder-tree-update:not(.has-update) {
+  color: #43a047;
+}
+.folder-tree-support {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.folder-tree-support a {
+  color: var(--accent);
+  text-decoration: none;
 }
 
 /* ---- Mail List ---- */
@@ -1447,6 +1354,9 @@ legend {
 .update-label {
   color: var(--text-muted);
   font-weight: 500;
+}
+.update-check-row {
+  margin-top: 16px;
 }
 .update-value {
   font-weight: 700;

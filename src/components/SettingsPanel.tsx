@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { MailConfig, FolderConfig, UserSettings } from '../types'
 import { fetchAccounts, saveAccount, deleteAccount, testConnection, fetchPresets, savePreset, deletePreset, fetchRecipients, saveRecipient, deleteRecipient } from '../api/mail'
-import { fetchImapFolders, fetchFolderConfig, saveFolderConfig, saveSettings, fetchVersion, checkForUpdate, type CheckUpdateResult } from '../api/mail'
+import { fetchImapFolders, fetchFolderConfig, saveFolderConfig, saveSettings } from '../api/mail'
 import AddAccountForm from './AddAccountForm'
+import UpdatePanel from './UpdatePanel'
 
 interface Props {
   initialSettings: UserSettings
@@ -20,27 +21,6 @@ interface AccountWithFolders {
 
 export default function SettingsPanel({ initialSettings, onClose, onSettingsChange }: Props) {
   const [tab, setTab] = useState<Tab>('accounts')
-  const [hasUpdate, setHasUpdate] = useState(false)
-  const [updateVersion, setUpdateVersion] = useState('')
-
-  useEffect(() => {
-    fetchVersion().then(v => {
-      if (v.version) {
-        const cached = sessionStorage.getItem('mail_cs_update')
-        if (cached) {
-          const c = JSON.parse(cached)
-          setHasUpdate(c.hasUpdate)
-          setUpdateVersion(c.latest)
-          return
-        }
-        checkForUpdate().then(r => {
-          sessionStorage.setItem('mail_cs_update', JSON.stringify(r))
-          setHasUpdate(r.hasUpdate)
-          setUpdateVersion(r.latest)
-        }).catch(() => {})
-      }
-    }).catch(() => {})
-  }, [])
   const [recipients, setRecipients] = useState<any[]>([])
   const [recipientForm, setRecipientForm] = useState<any | null>(null)
   const [presets, setPresets] = useState<any[]>([])
@@ -203,7 +183,6 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
           <button className={`settings-tab ${tab === 'settings' ? 'active' : ''}`} onClick={() => setTab('settings')}>用户设置</button>
           <button className={`settings-tab ${tab === 'about' ? 'active' : ''}`} onClick={() => setTab('about')}>
             关于
-            {hasUpdate && <span className="update-badge" title={`新版本 ${updateVersion}`}>!</span>}
           </button>
         </div>
 
@@ -429,7 +408,7 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
           )}
 
           {tab === 'about' && (
-            <AboutTab version={updateVersion} hasUpdate={hasUpdate} />
+            <AboutTab />
           )}
 
           {tab === 'settings' && (
@@ -477,26 +456,8 @@ export default function SettingsPanel({ initialSettings, onClose, onSettingsChan
   )
 }
 
-function AboutTab({ version, hasUpdate }: { version: string; hasUpdate: boolean }) {
-  const [checking, setChecking] = useState(false)
-  const [result, setResult] = useState<CheckUpdateResult | null>(null)
-
-  useEffect(() => {
-    if (version) {
-      setResult({ current: version, latest: version, hasUpdate, releaseUrl: null })
-    }
-  }, [version, hasUpdate])
-
-  const handleCheck = async () => {
-    setChecking(true)
-    setResult(null)
-    try {
-      const r = await checkForUpdate()
-      sessionStorage.setItem('mail_cs_update', JSON.stringify(r))
-      setResult(r)
-    } catch {}
-    setChecking(false)
-  }
+function AboutTab() {
+  const [showUpdate, setShowUpdate] = useState(false)
 
   return (
     <div className="about-section">
@@ -513,42 +474,11 @@ function AboutTab({ version, hasUpdate }: { version: string; hasUpdate: boolean 
       </dl>
 
       <div className="update-section">
-        <div className="update-row">
-          <span className="update-label">当前版本</span>
-          <span className="update-value">{version || '...'}</span>
-        </div>
-        {result && (
-          <div className={`update-result ${result.hasUpdate ? 'has-update' : 'up-to-date'}`}>
-            {result.error ? (
-              <>
-                <p className="update-error">{result.error}</p>
-                <button className="btn-primary btn-sm" onClick={handleCheck} disabled={checking} style={{ marginTop: 8 }}>
-                  {checking ? '检查中...' : '重新检查'}
-                </button>
-              </>
-            ) : result.hasUpdate ? (
-              <>
-                <p>发现新版本: <strong>{result.latest}</strong></p>
-                {result.releaseUrl && (
-                  <a href={result.releaseUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
-                    前往下载
-                  </a>
-                )}
-                <button className="btn-tiny" onClick={handleCheck} disabled={checking} style={{ marginLeft: 12 }}>
-                  {checking ? '...' : '重新检查'}
-                </button>
-              </>
-            ) : (
-              <>
-                <p>已是最新版本</p>
-                <button className="btn-tiny" onClick={handleCheck} disabled={checking} style={{ marginTop: 8 }}>
-                  {checking ? '检查中...' : '重新检查'}
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        <button className="btn-primary" onClick={() => setShowUpdate(true)}>
+          检查更新
+        </button>
       </div>
+      {showUpdate && <UpdatePanel onClose={() => setShowUpdate(false)} />}
     </div>
   )
 }

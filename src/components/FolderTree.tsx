@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import type { MailConfig, FolderConfig } from '../types'
+import UpdatePanel from './UpdatePanel'
 
 interface Props {
   accounts: MailConfig[]
@@ -15,6 +17,32 @@ export default function FolderTree({
   accounts, activeAccountId, folders, selectedFolder, unreadCounts,
   onSelectAccount, onSelectFolder, onCompose,
 }: Props) {
+  const [version, setVersion] = useState('')
+  const [hasUpdate, setHasUpdate] = useState(false)
+  const [updateInfo, setUpdateInfo] = useState('')
+  const [showUpdate, setShowUpdate] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/version').then(r => r.json()).then(v => {
+      setVersion(v.version || '')
+      const cached = sessionStorage.getItem('mail_cs_update')
+      if (cached) {
+        const c = JSON.parse(cached)
+        setHasUpdate(c.hasUpdate)
+        if (c.hasUpdate) setUpdateInfo(`新版本 ${c.latest}`)
+        else setUpdateInfo('已是最新')
+        return
+      }
+      fetch('/api/check-update', { method: 'POST' }).then(r => r.json()).then(r => {
+        sessionStorage.setItem('mail_cs_update', JSON.stringify(r))
+        setHasUpdate(r.hasUpdate)
+        if (r.error) setUpdateInfo('检查失败')
+        else if (r.hasUpdate) setUpdateInfo(`新版本 ${r.latest}`)
+        else setUpdateInfo('已是最新')
+      }).catch(() => setUpdateInfo('检查失败'))
+    }).catch(() => {})
+  }, [])
+
   const enabledFolders = folders.filter(f => f.enabled)
   // Ensure at least INBOX is available
   const displayFolders = enabledFolders.length > 0
@@ -66,9 +94,17 @@ export default function FolderTree({
           写邮件
         </button>
         <div className="folder-tree-footer">
-          <span className="folder-tree-version">v1.0.0</span>
+          <span className="folder-tree-version" onClick={() => setShowUpdate(true)}>
+            {version ? `v${version}` : ''}
+          </span>
+          {updateInfo && (
+            <span className={`folder-tree-update ${hasUpdate ? 'has-update' : ''}`} onClick={() => setShowUpdate(true)}>
+              {updateInfo}
+            </span>
+          )}
           <span className="folder-tree-support">技术支持：<a href="https://www.heiu.top" target="_blank" rel="noopener noreferrer">嘿哟博客</a></span>
         </div>
+        {showUpdate && <UpdatePanel onClose={() => setShowUpdate(false)} />}
       </div>
     </div>
   )
