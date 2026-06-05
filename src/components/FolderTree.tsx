@@ -21,6 +21,7 @@ export default function FolderTree({
   const [hasUpdate, setHasUpdate] = useState(false)
   const [updateInfo, setUpdateInfo] = useState('')
   const [showUpdate, setShowUpdate] = useState(false)
+  const [showDeploy, setShowDeploy] = useState(false)
 
   useEffect(() => {
     fetch('/api/version').then(r => r.json()).then(v => {
@@ -102,7 +103,20 @@ export default function FolderTree({
               {updateInfo}
             </span>
           )}
-          <span className="folder-tree-support">技术支持：<a href="https://www.heiu.top" target="_blank" rel="noopener noreferrer">嘿哟博客</a></span>
+          <span className="folder-tree-support">
+            <a href="https://www.heiu.top" target="_blank" rel="noopener noreferrer">嘿哟博客</a>
+            &nbsp;·&nbsp;
+            <span className="folder-tree-deploy" onClick={() => setShowDeploy(p => !p)}>部署指南</span>
+          </span>
+          {showDeploy && (
+            <div className="folder-tree-deploy-box">
+              <strong>Docker 部署</strong>
+              <pre>docker compose up -d</pre>
+              <strong>本地部署</strong>
+              <pre>npm install &amp;&amp; npm run build &amp;&amp; node dist/server/index.js</pre>
+              <span className="folder-tree-deploy-close" onClick={() => setShowDeploy(false)}>收起</span>
+            </div>
+          )}
         </div>
         {showUpdate && <UpdatePanel onClose={() => setShowUpdate(false)} />}
       </div>

@@ -1166,6 +1166,46 @@ legend {
   color: var(--accent);
   text-decoration: none;
 }
+.folder-tree-deploy {
+  cursor: pointer;
+}
+.folder-tree-deploy:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.folder-tree-deploy-box {
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  font-size: 11px;
+  text-align: left;
+  line-height: 1.6;
+}
+.folder-tree-deploy-box strong {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+.folder-tree-deploy-box strong:first-child { margin-top: 0; }
+.folder-tree-deploy-box pre {
+  margin: 2px 0 0;
+  font-size: 11px;
+  background: var(--bg-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.folder-tree-deploy-close {
+  display: inline-block;
+  margin-top: 6px;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 10px;
+}
 
 /* ---- Mail List ---- */
 .mail-list {
@@ -1465,6 +1505,17 @@ legend {
 }
 .about-info a:hover {
   text-decoration: underline;
+}
+.deploy-code {
+  background: var(--bg-secondary);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+  border: 1px solid var(--border-color);
 }
 
 /* ---- Update section ---- */

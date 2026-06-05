@@ -28,25 +28,70 @@
 
 ## 快速开始
 
+### 本地部署
+
 ```bash
+# 1. 安装依赖
+npm install
+
+# 2. 构建前端 + 编译后端
+npm run build
+
+# 3. 启动（需自行准备 MySQL）
+node dist/server/index.js
+```
+
+### Docker 部署（推荐）
+
+```bash
+# 克隆仓库
+git clone https://github.com/xiaoheiyo/mail_cs.git
+cd mail_cs
+
+# 启动（MySQL + 应用自动运行）
+docker compose up -d
+
+# 查看日志
+docker compose logs -f app
+```
+
+首次启动后访问 `http://localhost:3001`，在初始化页面配置 MySQL 连接信息即可。
+
+### 下载源码本地部署
+
+```bash
+# 从 GitHub 下载最新代码
+git clone https://github.com/xiaoheiyo/mail_cs.git
+cd mail_cs
+
 # 安装依赖
 npm install
 
-# 启动生产服务
-npm start
+# 构建
+npm run build
+
+# 配置环境变量（可选，也可通过前端页面配置）
+set DB_HOST=127.0.0.1
+set DB_PORT=3306
+set DB_USER=root
+set DB_PASSWORD=yourpassword
+set DB_NAME=mail_cs
+
+# 启动
+node dist/server/index.js
 ```
 
 ### 环境变量
 
-| 变量 | 说明 |
-|------|------|
-| `PORT` | 服务端口（默认 3001） |
-| `DB_HOST` | MySQL 主机 |
-| `DB_PORT` | MySQL 端口 |
-| `DB_USER` | MySQL 用户 |
-| `DB_PASSWORD` | MySQL 密码 |
-| `DB_NAME` | 数据库名 |
-| `NODE_ENV` | 环境（production/development） |
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `PORT` | 服务端口 | 3001 |
+| `DB_HOST` | MySQL 主机 | - |
+| `DB_PORT` | MySQL 端口 | 3306 |
+| `DB_USER` | MySQL 用户 | - |
+| `DB_PASSWORD` | MySQL 密码 | - |
+| `DB_NAME` | 数据库名 | - |
+| `GITHUB_TOKEN` | GitHub API 令牌（提升更新检查频率限制） | - |
 
 
 ## 原始 SMTP 协议
