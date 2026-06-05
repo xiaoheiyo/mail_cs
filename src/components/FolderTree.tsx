@@ -25,7 +25,7 @@ export default function FolderTree({
   useEffect(() => {
     fetch('/api/version').then(r => r.json()).then(v => {
       setVersion(v.version || '')
-      const cached = sessionStorage.getItem('mail_cs_update')
+      const cached = sessionStorage.getItem('mail_cs_update_v2')
       if (cached) {
         const c = JSON.parse(cached)
         setHasUpdate(c.hasUpdate)
@@ -34,7 +34,7 @@ export default function FolderTree({
         return
       }
       fetch('/api/check-update', { method: 'POST' }).then(r => r.json()).then(r => {
-        sessionStorage.setItem('mail_cs_update', JSON.stringify(r))
+        sessionStorage.setItem('mail_cs_update_v2', JSON.stringify(r))
         setHasUpdate(r.hasUpdate)
         if (r.error) setUpdateInfo('检查失败')
         else if (r.hasUpdate) setUpdateInfo(`新版本 ${r.latest}`)

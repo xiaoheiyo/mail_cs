@@ -7,10 +7,11 @@ const __filename = fileURLToPath(import.meta.url)
 
 const COMMITS_API = 'https://api.github.com/repos/xiaoheiyo/mail_cs/commits?per_page=10'
 const DOWNLOAD_PROXY = 'https://gh-proxy.com/'
+const GH_TOKEN = process.env.GITHUB_TOKEN || ''
 
 function getCurrentCommit(): string {
   try {
-    return execSync('git rev-parse --short HEAD', { cwd: process.cwd(), encoding: 'utf-8', timeout: 5000 }).trim()
+    return execSync('git rev-parse --short=7 HEAD', { cwd: process.cwd(), encoding: 'utf-8', timeout: 5000 }).trim()
   } catch {
     try {
       const pkgPath = resolve(dirname(__filename), '../../../package.json')
@@ -52,10 +53,13 @@ export function getDownloadProgress() {
 
 export async function checkForUpdate(): Promise<CheckResult> {
   try {
-    const res = await fetch(COMMITS_API, {
-      headers: { 'User-Agent': 'mail-cs-update-checker' },
-      signal: AbortSignal.timeout(10000),
-    })
+    const headers: Record<string, string> = { 'User-Agent': 'mail-cs-update-checker' }
+    if (GH_TOKEN) headers['Authorization'] = `Bearer ${GH_TOKEN}`
+    const res = await fetch(COMMITS_API, { headers, signal: AbortSignal.timeout(10000) })
+    if (res.status === 403) {
+      const msg = GH_TOKEN ? 'GitHub API 访问被拒' : 'GitHub API 频率限制，请设置环境变量 GITHUB_TOKEN'
+      return { current: CURRENT_COMMIT, latest: CURRENT_COMMIT, hasUpdate: false, commits: [], downloadUrl: null, error: msg }
+    }
     if (!res.ok) {
       return { current: CURRENT_COMMIT, latest: CURRENT_COMMIT, hasUpdate: false, commits: [], downloadUrl: null, error: '检查失败: ' + res.status }
     }
@@ -64,8 +68,8 @@ export async function checkForUpdate(): Promise<CheckResult> {
       return { current: CURRENT_COMMIT, latest: CURRENT_COMMIT, hasUpdate: false, commits: [], downloadUrl: null, error: '无法获取提交记录' }
     }
 
-    const latestSha = data[0].sha.substring(0, 7)
-    const hasUpdate = latestSha !== CURRENT_COMMIT
+    const latestSha = data[0].sha.substring(0, 7).trim()
+    const hasUpdate = latestSha !== CURRENT_COMMIT.trim()
 
     const commits: CommitInfo[] = data.map((c: any) => ({
       sha: c.sha.substring(0, 7),

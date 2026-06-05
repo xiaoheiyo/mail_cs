@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getCurrentVersion, checkForUpdate, downloadUpdate, getDownloadProgress } from '../services/updateService.js'
+import { getCurrentVersion, checkForUpdate, downloadUpdate, getDownloadProgress, applyUpdate, getApplyProgress } from '../services/updateService.js'
 
 const router = Router()
 
@@ -23,6 +23,19 @@ router.post('/update/download', async (_req, res) => {
 
 router.get('/update/progress', (_req, res) => {
   res.json(getDownloadProgress())
+})
+
+router.post('/update/apply', (_req, res) => {
+  try {
+    applyUpdate()
+    res.json({ success: true })
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || '应用更新失败' })
+  }
+})
+
+router.get('/update/apply-progress', (_req, res) => {
+  res.json(getApplyProgress())
 })
 
 export default router
